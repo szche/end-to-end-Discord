@@ -37,7 +37,7 @@ class AESCipher(object):
 
 if __name__ == "__main__":
     aes = AESCipher(6)
-    enc = aes.encrypt("siemka co tam u ciebie")
+    enc = aes.encrypt("This is a test message")
     dec = aes.decrypt(enc)
     print(enc, dec)
 
