@@ -1,11 +1,13 @@
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
+from bot import start_bot
+import time, threading
 
-DC_TOKEN = "" 
 
 class GUI(object):
-    def __init__(self):
+    def __init__(self, DC_TOKEN=""):
+        self.DC_TOKEN = DC_TOKEN
         self.root = tk.Tk()
         self.root.title("end-to-end Discord")
         self.root.geometry("1024x720")
@@ -35,7 +37,7 @@ class GUI(object):
         self.tokenEntry = tk.Entry(self.loginPage, width=70, bd=2, \
                                         relief="flat", highlightbackground="#b9c4f1", \
                                         highlightthickness=2)
-        self.tokenEntry.insert(0, DC_TOKEN)
+        self.tokenEntry.insert(0, self.DC_TOKEN)
         self.tokenEntry.config(highlightbackground="black", highlightcolor="black", border=4)
         self.tokenEntry['font'] = tkFont.Font(size=15)
         self.tokenEntry.grid(row=2, column=0, sticky="w", padx=70, pady=0)
@@ -61,7 +63,10 @@ class GUI(object):
             with open("dcToken.txt", "w+") as f:
                 f.write(token)
 
-        #TODO login with the discord bot
+        #TODO login with the discord bot in a separate thread
+        bot_thread = threading.Thread(target=start_bot)
+        bot_thread.deamon = True
+        bot_thread.start()
         self.showPage(self.mainPage)
 
     def configure_mainPage(self):
@@ -110,10 +115,10 @@ if __name__ == "__main__":
     #Check if the token is already stored in dcToken.txt
     try:
         with open("dcToken.txt", "r") as f:
-            DC_TOKEN = ''.join(f.readlines()) 
+            token = ''.join(f.readlines()) 
     except:
         print("Could not find a dcToken file")
-    window = GUI()
+    window = GUI(token)
     window.configure_loginPage()
     window.configure_mainPage()
     window.showPage(window.loginPage)
