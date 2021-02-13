@@ -4,6 +4,12 @@ from discord.ext import commands
 from diffie_hellman import DiffieHellman
 from aes import AESCipher
 
+database = {
+        "token": None,
+        "keys": {},
+        "chats": {},
+} 
+
 bot = commands.Bot(command_prefix="")
 keybase = {}
 
@@ -11,18 +17,25 @@ def start_bot():
     global bot
     with open("dcToken.txt", "r") as f:
         token = ''.join(f.readlines()) 
+    database['token'] = token
     bot.run(token, bot=False)
 
 @bot.event
 async def on_ready():
     print("-" * 40)
     print('Started the bot as:', bot.user)
+    print("BOT:", database)
+    users = bot.users
+    for user in users:
+        database['chats'][user.id] = []
+        database['keys'][user.id] = None
     print("-" * 40)
 
 @bot.event
 async def on_message(message):
     #Ignore MSGs if they're not DMs
     #TODO implement end-to-end group chatting
+    print(database)
     if message.author == bot.user or not isinstance(message.channel, discord.DMChannel):
         return
 
