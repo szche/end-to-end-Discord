@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
-from bot import start_bot
+from bot import start_bot, database 
 import time, threading
 
 
@@ -18,6 +18,24 @@ class GUI(object):
 
         for frame in (self.loginPage, self.mainPage):
             frame.grid(row=10, column=10, sticky='nesw')
+
+        self.sync_thread = threading.Thread(target=self.sync)
+        self.sync_thread.deamon = True
+        self.sync_thread.start()
+
+    def sync(self):
+        previous_database = database
+        print("Started sync")
+        print(previous_database)
+        print('-' * 30)
+        while True:
+            self.update_chats(database['chats'])
+            time.sleep(1)
+
+    def update_chats(self, chats):
+        for key, val in chats.items():
+            print(key, val)
+            self.field.insert('1.0', f'{key}\n\n')
 
     def showPage(self, page):
         page.tkraise()
@@ -99,15 +117,17 @@ class GUI(object):
 
 
         #TODO other chats will be shown here
-        field = tk.Text(right_frame, bg="#D3D3D3",yscrollcommand=1, exportselection=1, \
+        self.field = tk.Text(right_frame, bg="red",yscrollcommand=1, exportselection=1, \
                                     bd=0, height=21,selectbackground="#B1B1B1", width=18, \
-                                    state="disabled", highlightbackground="#D3D3D3")
-        field['font'] = tkFont.Font(family="Arial", size=20)
-        field.place(x=10, y=10)
+                                    state="normal", highlightbackground="#D3D3D3")
+        self.field['font'] = tkFont.Font(family="Arial", size=20)
+        self.field.place(x=10, y=10)
+        self.field.insert('1.0', 'siemka co tam')
 
     def send_msg(self):
         msg = self.chatEntry.get()
         print(msg)
+        print(database)
         self.chatEntry.delete(0, len(msg) )
 
 
