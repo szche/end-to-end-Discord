@@ -3,6 +3,7 @@ import tkinter.font as tkFont
 import tkinter.ttk as ttk
 from bot import start_bot, database 
 import time, threading
+from copy import deepcopy
 
 
 class GUI(object):
@@ -25,21 +26,31 @@ class GUI(object):
         self.sync_thread.start()
 
     def sync(self):
-        previous_database = database
+        previous_database = deepcopy(database)
         print("Started sync")
-        print(previous_database)
         print('-' * 30)
         while True:
-            self.update_chats(database['chats'])
-            #TODO self.update_chatbox() 
-            time.sleep(2)
+            #Update the GUI only if there's a change to the database
+            if database != previous_database:
+                self.update_chats(database['chats'])
+                self.update_chatbox() 
+                previous_database = deepcopy(database)
+            time.sleep(1)
 
     def choose_chat(self):
         chatID = self.chat_choice.get()
         self.chatUsername['text'] = chatID
-
-        #TODO update the chat box with messages from database 
+        self.update_chatbox()
         
+    def update_chatbox(self):
+        spacer = '-'*90
+        username = self.chatUsername['text']
+        if username in database['chats'].keys():
+            messages = database['chats'][username]
+            self.chatHistory['state'] = 'normal'
+            self.chatHistory.delete('1.0', tk.END)
+            self.chatHistory.insert(tk.END, f'\n{spacer}\n'.join(messages) )
+            self.chatHistory['state'] = 'disabled'
 
     def update_chats(self, chats):
         # Delete all previous buttons
@@ -117,11 +128,11 @@ class GUI(object):
         self.chatUsername['font'] = tkFont.Font(family="Arial", size=17, weight="bold")
         self.chatUsername.place(x=50, y=0)
 
-        chatHistory = tk.Text(self.right_panel, bg="#D3D3D3",yscrollcommand=1, exportselection=1, \
-                                    bd=0, height=18,selectbackground="#B1B1B1", width=42, \
-                                    state="disabled", highlightbackground="#D3D3D3")
-        chatHistory['font'] = tkFont.Font(family="Arial", size=20)
-        chatHistory.place(x=50, y=40)
+        self.chatHistory = tk.Text(self.right_panel, bg="#D3D3D3",yscrollcommand=1, exportselection=1, \
+                                    bd=0, height=30,selectbackground="#B1B1B1", width=69, \
+                                    state="disabled", highlightbackground="#D3D3D3", padx=5, pady=5)
+        self.chatHistory['font'] = tkFont.Font(family="Arial", size=13)
+        self.chatHistory.place(x=50, y=40)
 
         self.chatEntry = tk.Entry(self.right_panel, bd=2, bg="white", width=26, relief="flat", selectborderwidth=2, highlightthickness=2)
         self.chatEntry.config(highlightbackground="black", highlightcolor="black")
