@@ -15,6 +15,7 @@ class GUI(object):
 
         self.loginPage = tk.Frame(self.root, bg="white")
         self.mainPage = tk.Frame(self.root, bg="white")
+        self.chats = []
 
         for frame in (self.loginPage, self.mainPage):
             frame.grid(row=10, column=10, sticky='nesw')
@@ -30,12 +31,31 @@ class GUI(object):
         print('-' * 30)
         while True:
             self.update_chats(database['chats'])
-            time.sleep(1)
+            #TODO self.update_chatbox() 
+            time.sleep(2)
+
+    def choose_chat(self):
+        chatID = self.chat_choice.get()
+        self.chatUsername['text'] = chatID
+
+        #TODO update the chat box with messages from database 
+        
 
     def update_chats(self, chats):
-        for key, val in chats.items():
-            print(key, val)
-            self.field.insert('1.0', f'{key}\n\n')
+        # Delete all previous buttons
+        for button in self.chats:
+            button.destroy()
+        self.chats = []
+        
+        self.chat_choice = tk.StringVar()
+        for counter, key in enumerate(chats):
+            button = tk.Radiobutton(self.left_panel, bg="white", text=key, width=25, \
+                        height=3, border=0, activebackground="#959595", \
+                        indicator=0, variable=self.chat_choice, value=key, \
+                        command=lambda: self.choose_chat())
+            button['font'] = tkFont.Font(family="Arial", size=12, weight="bold")
+            button.place(x=20, y=80*counter + 10)
+            self.chats.append(button)
 
     def showPage(self, page):
         page.tkraise()
@@ -88,41 +108,35 @@ class GUI(object):
         self.showPage(self.mainPage)
 
     def configure_mainPage(self):
-        left_frame = tk.Frame(self.mainPage, width=704, height=720, bg="white")
-        left_frame.grid(row=0, column=1)
-        right_frame = tk.Frame(self.mainPage, width=290, height=720, bg="#D3D3D3")
-        right_frame.grid(row=0, column=0)
+        self.right_panel = tk.Frame(self.mainPage, width=704, height=720, bg="white")
+        self.right_panel.grid(row=0, column=1)
+        self.left_panel = tk.Frame(self.mainPage, width=290, height=720, bg="#D3D3D3")
+        self.left_panel.grid(row=0, column=0)
 
-        chatUsername = tk.Label(left_frame, text="Test_user", bg="white")
-        chatUsername['font'] = tkFont.Font(family="Arial", size=17, weight="bold")
-        chatUsername.place(x=50, y=0)
+        self.chatUsername = tk.Label(self.right_panel, text="Test_user", bg="white")
+        self.chatUsername['font'] = tkFont.Font(family="Arial", size=17, weight="bold")
+        self.chatUsername.place(x=50, y=0)
 
-        chatHistory = tk.Text(left_frame, bg="#D3D3D3",yscrollcommand=1, exportselection=1, \
+        chatHistory = tk.Text(self.right_panel, bg="#D3D3D3",yscrollcommand=1, exportselection=1, \
                                     bd=0, height=18,selectbackground="#B1B1B1", width=42, \
                                     state="disabled", highlightbackground="#D3D3D3")
         chatHistory['font'] = tkFont.Font(family="Arial", size=20)
         chatHistory.place(x=50, y=40)
 
-        self.chatEntry = tk.Entry(left_frame, bd=2, bg="white", width=26, relief="flat", selectborderwidth=2, highlightthickness=2)
+        self.chatEntry = tk.Entry(self.right_panel, bd=2, bg="white", width=26, relief="flat", selectborderwidth=2, highlightthickness=2)
         self.chatEntry.config(highlightbackground="black", highlightcolor="black")
         self.chatEntry['font'] = tkFont.Font(family="Arial", size=26)
         self.chatEntry.place(x=50, y=640)
 
-        sendMsgButton = tk.Button(left_frame, text="Send", fg="white", bg="black", width=10,\
+        sendMsgButton = tk.Button(self.right_panel, text="Send", fg="white", bg="black", width=10,\
                                             relief="solid", height=2, anchor="center", \
                                             activebackground="white", activeforeground="black",\
                                             command=lambda: self.send_msg())
         sendMsgButton['font'] = tkFont.Font(family="Arial", size=12, weight="bold")
         sendMsgButton.place(x=580, y=640)
 
+        self.chats = []
 
-        #TODO other chats will be shown here
-        self.field = tk.Text(right_frame, bg="red",yscrollcommand=1, exportselection=1, \
-                                    bd=0, height=21,selectbackground="#B1B1B1", width=18, \
-                                    state="normal", highlightbackground="#D3D3D3")
-        self.field['font'] = tkFont.Font(family="Arial", size=20)
-        self.field.place(x=10, y=10)
-        self.field.insert('1.0', 'siemka co tam')
 
     def send_msg(self):
         msg = self.chatEntry.get()
