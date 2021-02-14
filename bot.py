@@ -27,8 +27,8 @@ async def on_ready():
     print("BOT:", database)
     users = bot.users
     for user in users:
-        database['chats'][user.id] = []
-        database['keys'][user.id] = None
+        database['chats'][str(user.id)] = []
+        database['keys'][str(user.id)] = None
     print("-" * 40)
 
 @bot.event
@@ -41,6 +41,7 @@ async def on_message(message):
 
     #print(message.author)
     #print(message.content)
+    database['chats'][str(message.author.id)].append(message.content)
 
     if message.content.startswith("===KEYEXCH==="):
         # Perform a Diffie-Hellman key exchange
