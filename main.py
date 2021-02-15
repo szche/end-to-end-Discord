@@ -1,5 +1,10 @@
 from gui import GUI
 
+"""
+    TODO list
+ * Switch to using SQL database to store all the information
+
+"""
 
 if __name__ == "__main__":
     #Check if the token is already stored in dcToken.txt
