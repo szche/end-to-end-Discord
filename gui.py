@@ -4,6 +4,7 @@ import tkinter.ttk as ttk
 from bot import start_bot, database 
 import time, threading
 from copy import deepcopy
+from utils import serialize
 
 
 class GUI(object):
@@ -30,21 +31,22 @@ class GUI(object):
         print("Started sync")
         print('-' * 30)
         while True:
+            time.sleep(1)
             #Update the GUI only if there's a change to the database
-            if database != previous_database:
-                self.update_chats(database['chats'])
+            if serialize(database) != serialize(previous_database):
+                self.update_chats(database['users'])
                 self.update_chatbox() 
                 previous_database = deepcopy(database)
-            time.sleep(1)
 
     def choose_chat(self):
         chatID = self.chat_choice.get()
-        self.chatUsername['text'] = chatID
+        self.chatUsername['text'] = database['users'][chatID]['name'] 
         self.update_chatbox()
         
     def update_chatbox(self):
         spacer = '-'*90
-        username = self.chatUsername['text']
+        print("Updated chatbox")
+        username = self.chat_choice.get()
         if username in database['chats'].keys():
             messages = database['chats'][username]
             self.chatHistory['state'] = 'normal'
@@ -60,7 +62,7 @@ class GUI(object):
         
         self.chat_choice = tk.StringVar()
         for counter, key in enumerate(chats):
-            button = tk.Radiobutton(self.left_panel, bg="white", text=key, width=25, \
+            button = tk.Radiobutton(self.left_panel, bg="white", text=chats[key]['name'], width=25, \
                         height=3, border=0, activebackground="#959595", \
                         indicator=0, variable=self.chat_choice, value=key, \
                         command=lambda: self.choose_chat())
@@ -145,8 +147,6 @@ class GUI(object):
                                             command=lambda: self.send_msg())
         sendMsgButton['font'] = tkFont.Font(family="Arial", size=12, weight="bold")
         sendMsgButton.place(x=580, y=640)
-
-        self.chats = []
 
 
     def send_msg(self):
