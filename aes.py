@@ -36,9 +36,10 @@ class AESCipher(object):
 
 
 if __name__ == "__main__":
-    aes = AESCipher(6)
-    enc = aes.encrypt("This is a test message")
-    dec = aes.decrypt(enc)
-    print(enc, dec)
+    key = int(input("Input the key: "))
+    aes = AESCipher(key)
+    msg = input("Message: ")
+    enc = aes.encrypt(msg)
+    print(f'\'{enc}\'')
 
 

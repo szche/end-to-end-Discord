@@ -19,6 +19,13 @@ def start_bot():
     database['token'] = token
     bot.run(token, bot=False)
 
+async def reply(userID, message):
+    u = await bot.fetch_user(userID)
+    try:
+        await u.send(message)
+    except:
+        print("Erorr sending message:", user)
+
 @bot.event
 async def on_ready():
     print("-" * 40)
@@ -49,7 +56,7 @@ async def on_message(message):
     if message.author == bot.user or not isinstance(message.channel, discord.DMChannel):
         return
 
-    database['chats'][str(message.author.id)].append(message.content)
+    #database['chats'][str(message.author.id)].append(message.content)
 
     if message.content.startswith("===KEYEXCH==="):
         # Perform a Diffie-Hellman key exchange
@@ -73,16 +80,18 @@ async def on_message(message):
     elif message.content.startswith("===MSG==="):
         # Recieve a message:
         content = message.content[9:]
-        key = database['users'][str(message.author.id)]['key'].key
-        aes = AESCipher( key ) 
         try:
+            key = database['users'][str(message.author.id)]['key'].key
+            aes = AESCipher( key ) 
             decrypted = aes.decrypt(content)
         except:
             print("Error while decrypting message")
             return
         print(content)
         print(decrypted)
-        await message.author.send("Roger that")
+                                                            # 0 - Sent by someone
+                                                            # 1 - Sent by you
+        database['chats'][str(message.author.id)].append( [0, decrypted] )
 
 if __name__ == "__main__":
     start_bot()
