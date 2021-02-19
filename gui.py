@@ -1,10 +1,10 @@
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
-from bot import start_bot, database 
+from bot import start_bot, database, reply
 import time, threading
 from copy import deepcopy
-from utils import serialize
+from utils import serialize, sha256 
 
 
 class GUI(object):
@@ -27,16 +27,18 @@ class GUI(object):
         self.sync_thread.start()
 
     def sync(self):
-        previous_database = deepcopy(database)
+        database_hash = sha256(database) 
         print("Started sync")
         print('-' * 30)
         while True:
             time.sleep(1)
             #Update the GUI only if there's a change to the database
-            if serialize(database) != serialize(previous_database):
+            if sha256(database) != database_hash:
+            #if serialize(database) != serialize(previous_database):
                 self.update_chats(database['users'])
                 self.update_chatbox() 
-                previous_database = deepcopy(database)
+                #previous_database = deepcopy(database)
+                database_hash = sha256(database)
 
     def choose_chat(self):
         chatID = self.chat_choice.get()
@@ -51,7 +53,13 @@ class GUI(object):
             messages = database['chats'][username]
             self.chatHistory['state'] = 'normal'
             self.chatHistory.delete('1.0', tk.END)
-            self.chatHistory.insert(tk.END, f'\n{spacer}\n'.join(messages) )
+            for msg in messages:
+                    if msg[0] == 0:
+                        user = database['users'][str(username)]['name']
+                        self.chatHistory.insert(tk.END, f'\t{user} sent:\n' )
+                    else:
+                        self.chatHistory.insert(tk.END, f'\tYou sent:' )
+                    self.chatHistory.insert(tk.END, f'{msg[1]}\n{spacer}\n' )
             self.chatHistory['state'] = 'disabled'
 
     def update_chats(self, chats):
@@ -114,7 +122,6 @@ class GUI(object):
             with open("dcToken.txt", "w+") as f:
                 f.write(token)
 
-        #TODO login with the discord bot in a separate thread
         bot_thread = threading.Thread(target=start_bot)
         bot_thread.deamon = True
         bot_thread.start()
@@ -154,6 +161,7 @@ class GUI(object):
         print(msg)
         print(database)
         self.chatEntry.delete(0, len(msg) )
+        #reply(self.chat_choice.get(), msg)
 
 
 if __name__ == "__main__":
